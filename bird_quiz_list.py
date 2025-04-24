@@ -1,6 +1,8 @@
+
 import streamlit as st
 import os
 import base64
+import random
 
 # ====== 設定 ======
 AUDIO_FOLDER = "data"
@@ -20,27 +22,25 @@ if not st.session_state.authenticated:
         st.error("パスワードが違います")
     st.stop()
 
-# ====== クイズ表示 ======
+# ====== クイズ設定 ======
 st.title("鳥の鳴き声クイズ（一覧モード）")
 
-files = [f for f in os.listdir(AUDIO_FOLDER) if f.endswith(".mp3")]
-files.sort()  # 並び順は名前順。シャッフルしたければ random.shuffle(files)
-
-# セッションに回答・結果の保持用辞書を用意
-if "answers" not in st.session_state:
+# 初期ファイルリスト作成（1回だけ）
+if "shuffled_files" not in st.session_state:
+    files = [f for f in os.listdir(AUDIO_FOLDER) if f.endswith(".mp3")]
+    random.shuffle(files)
+    st.session_state.shuffled_files = files
     st.session_state.answers = {}
-if "results" not in st.session_state:
     st.session_state.results = {}
 
-# 結果集計用
+files = st.session_state.shuffled_files
 correct_count = 0
 
-# 表示
+# クイズ表示
 for file in files:
     bird_name = os.path.splitext(file)[0]
     col1, col2, col3 = st.columns([2, 3, 2])
 
-    # 音声（base64埋め込みで互換性向上）
     with open(os.path.join(AUDIO_FOLDER, file), "rb") as f:
         data = f.read()
     b64 = base64.b64encode(data).decode()
@@ -70,7 +70,15 @@ for file in files:
     else:
         col3.write("未回答")
 
-# 最後に正解数表示
+# 結果表示
 st.markdown("---")
 st.success(f"正解数：{correct_count} / {len(files)}")
 
+# ====== リセットボタン ======
+if st.button("もう一度やる（ランダム順）"):
+    files = [f for f in os.listdir(AUDIO_FOLDER) if f.endswith(".mp3")]
+    random.shuffle(files)
+    st.session_state.shuffled_files = files
+    st.session_state.answers = {}
+    st.session_state.results = {}
+    st.rerun()
