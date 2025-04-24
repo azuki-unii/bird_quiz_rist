@@ -76,9 +76,9 @@ st.success(f"正解数：{correct_count} / {len(files)}")
 
 # ====== リセットボタン ======
 if st.button("もう一度やる（ランダム順）"):
-    files = [f for f in os.listdir(AUDIO_FOLDER) if f.endswith(".mp3")]
-    random.shuffle(files)
-    st.session_state.shuffled_files = files
+    new_files = [f for f in os.listdir(AUDIO_FOLDER) if f.endswith(".mp3")]
+    random.shuffle(new_files)
+    st.session_state.shuffled_files = new_files  # ← ここでちゃんと更新！
     st.session_state.answers = {}
     st.session_state.results = {}
     st.rerun()
